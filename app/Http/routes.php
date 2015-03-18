@@ -12,10 +12,16 @@
 */
 
 Route::get('/', 'ChatController@index');
+Route::match(['get','post'],'create', 'ChatController@create');
 
 Route::get('home', 'HomeController@index');
 
 Route::controllers([
-	'auth' => 'Auth\AuthController',
-	'password' => 'Auth\PasswordController',
+    'auth' => 'Auth\AuthController',
+    'password' => 'Auth\PasswordController',
 ]);
+
+Route::post( '/chat', array(
+    'as' => 'chat.create',
+    'uses' => 'ChatController@create'
+) );

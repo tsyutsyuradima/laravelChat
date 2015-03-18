@@ -7,20 +7,34 @@
 <script>
     $(document).ready(function(){
 
-        $('#loginform').on('submit', function (e) {
-                $.ajax({
-                    type: 'post',
-                    url: './chat',
-                    data: $('#loginform').serialize(),
-                    dataType: "json",
-                    success: function (json) {
-                       alert("asdasd");
-                    }
-                });
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
-            return false;
         });
 
+        $('#loginform').on('submit', function (e) {
+            $.ajax({
+                type: 'post',
+                url: 'create',
+                data: $('#loginform').serialize(),
+                dataType: "json",
+                success: function (json) {
+                    if (json.status === 'success')
+                    {
+                       var user_name = json.user.name;
+                       var user_id = json.user.id;
+                        $('#loginform').hide();
+                        $('#chatform').show();
+                    }
+                    else if (json.status === 'error')
+                    {
+                        alert(json.msg);
+                    }
+                }
+            });
+            return false;
+        });
     });
 </script>
 
@@ -96,10 +110,11 @@
         <textarea id="message" placeholder="Write something.."></textarea>
         <input type="submit" id="submit" value="SEND"/>
     </form>
-    <form id="loginform">
-        <input id="logininput" type="email"  placeholder="Enter your email" class="form-control" name="email" value="<?php echo e(old('email')); ?>">
-        <input id="logininput" type="email" placeholder="Enter your pass" class="form-control" name="email" value="<?php echo e(old('email')); ?>">
+    <form id="loginform" route="create" method="post">
+        <input id="logininput" type="text"  placeholder="Enter your login" class="form-control" name="login" value="<?php echo e(old('login')); ?>">
+        <input id="logininput" type="password" placeholder="Enter your password" class="form-control" name="password" value="<?php echo e(old('password')); ?>">
         <input type="submit" id="submit" value="Login"/>
     </form>
+
 </footer>
 @stop
