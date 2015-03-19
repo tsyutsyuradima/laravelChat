@@ -1,18 +1,9 @@
 <?php
-
-/*
-|--------------------------------------------------------------------------
-| Application Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It's a breeze. Simply tell Laravel the URIs it should respond to
-| and give it the controller to call when that URI is requested.
-|
-*/
-
-Route::get('/', 'ChatController@index');
-Route::match(['get','post'],'create', 'ChatController@create');
+Route::match(['get','post'],'/', 'ChatController@index');
+Route::match(['get','post'],'login', 'ChatController@login');
+Route::match(['get','post'],'getHistory', 'ChatController@getHistory');
+Route::match(['get','post'],'checkHistory', 'ChatController@checkHistory');
+Route::match(['get','post'],'sendMessage', 'ChatController@sendMessage');
 
 Route::get('home', 'HomeController@index');
 
@@ -20,8 +11,3 @@ Route::controllers([
     'auth' => 'Auth\AuthController',
     'password' => 'Auth\PasswordController',
 ]);
-
-Route::post( '/chat', array(
-    'as' => 'chat.create',
-    'uses' => 'ChatController@create'
-) );

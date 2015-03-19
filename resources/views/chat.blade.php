@@ -13,108 +13,160 @@
             }
         });
 
-        $('#loginform').on('submit', function (e) {
+        var currentUser = '<?=  Session::get('name'); ?>';
+        if(currentUser != "")
+        {
+            $('#chatform').fadeIn(600);
+        }
+        else
+        {
+            $('#loginform').fadeIn(600);
+        }
+
+        var name = "",
+            section = $(".section"),
+            footer = $("footer"),
+            chatScreen = $(".chatscreen"),
+            left = $(".left"),
+            loginForm = $(".loginForm"),
+            yourName = $("#yourName"),
+            yourEmail = $("#yourEmail"),
+            hisName = $("#hisName"),
+            hisEmail = $("#hisEmail"),
+            chats = $(".chats"),
+            ownerImage = $("#ownerImage"),
+            leftImage = $("#leftImage"),
+            noMessagesImage = $("#noMessagesImage");
+
+        getHistory();
+
+        function getHistory(){
             $.ajax({
                 type: 'post',
-                url: 'create',
-                data: $('#loginform').serialize(),
+                url: 'getHistory',
                 dataType: "json",
                 success: function (json) {
                     if (json.status === 'success')
                     {
-                       var user_name = json.user.name;
-                       var user_id = json.user.id;
-                        $('#loginform').hide();
-                        $('#chatform').show();
+                        chatScreen.fadeIn(600, function(){
+                            scrollToBottom();
+                        });
+                        json.history.forEach(function(entry) {
+                            createChatMessage(entry.message, entry.name, entry.created);
+                        });
+                    }
+                    else
+                    {
+                        alert("OOps something worng with getting history");
+                    }
+                }
+            });
+        }
+
+        function createChatMessage(msg,user,now){
+            var li = $(
+                '<li class="me">'+
+                    '<div class="login">' +
+                    '<b></b>' +
+                    '<i class="timesent" data-time=' + now + '></i> ' +
+                    '</div>' +
+                    '<p></p>' +
+                '</li>');
+            li.find('p').text(msg);
+            li.find('b').text(user);
+            chats.append(li);
+        }
+
+        function scrollToBottom(){
+            window.scrollTo(0,document.body.scrollHeight);
+        }
+
+        function checkHistoty(){
+            $.ajax({
+                type: 'post',
+                url: 'checkHistory',
+                dataType: "json",
+                success: function (json) {
+                    console.log(json);
+
+                    if (json.status === 'update')
+                    {
+                        json.messages.forEach(function(entry) {
+                            createChatMessage(entry.message, entry.name, entry.created);
+                        });
+                        scrollToBottom();
+                    }
+                    else
+                    {
+                    }
+                }
+            });
+        }
+
+        $('#loginform').on('submit', function (e) {
+            $("#loginform #submit").fadeOut(300);
+            $.ajax({
+                type: 'post',
+                url: 'login',
+                data: $('#loginform').serialize(),
+                dataType: "json",
+                success: function (json) {
+                    console.log(json);
+
+                    if (json.status === 'success')
+                    {
+                        var user_name = json.user.name;
+                        var user_id = json.user.id;
+                        $('#loginform').fadeOut(600,function(){
+                            $('#chatform').fadeIn(600);
+                        });
                     }
                     else if (json.status === 'error')
                     {
-                        alert(json.msg);
+                        $("#loginform #submit").fadeIn(300);
                     }
                 }
             });
             return false;
         });
+
+        $('#chatform').on('submit', function (e) {
+            console.log($('#chatform #message').value)  ;
+            $('#chatform #message').value = "";
+            $.ajax({
+                type: 'post',
+                url: 'sendMessage',
+                data: $('#chatform').serialize(),
+                dataType: "json",
+                success: function (json) {
+                }
+            });
+            return false;
+        });
+
+        setInterval(function() {
+            checkHistoty();
+        }, 2000);
     });
 </script>
 
-
 <section class="section">
-
-    <div class="connected">
-        <img src="/img/unnamed.jpg" id="creatorImage" />
-        <div class="infoConnected">
-            <h2>Who are you?</h2>
-            <br/>
-
-            <form class="loginForm">
-                <input type="text" id="yourName" placeholder="Your nick name" /><br/>
-                <input type="text" id="yourEmail" placeholder="Your email address" /><br/>
-                <input type="submit" id="yourEnter" value="ENTER" />
-            </form>
-        </div>
-    </div>
-
-    <div class="personinside">
-        <img src="/img/unnamed.jpg" id="ownerImage" />
-        <div class="infoInside">
-            <h2>Chat with <span class="nickname-chat"></span></h2>
-            <br/>
-
-            <form class="loginForm">
-                <input type="text" id="hisName" placeholder="Your nick name" /><br/>
-                <input type="text" id="hisEmail" placeholder="Your email address" /><br/>
-                <input type="submit" id="hisEnter" value="CHAT" />
-            </form>
-        </div>
-    </div>
-
-    <div class="invite-textfield">
-        <h2>Oops, there are no other people in this chat!</h2>
-        <h5>Invite a friend by sending them this URL</h5>
-        <div class="link">
-            <a title="Invite a friend" href="" id="link"></a>
-        </div>
-    </div>
-
-    <div class="left">
-        <img src="/img/unnamed.jpg" id="leftImage" />
-        <div class="info">
-            <h2><span class="nickname-left"></span> has left this chat.</h2>
-            <h5>Invite somebody else by sending them this page.</h5>
-        </div>
-    </div>
-
-    <div class="toomanypeople">
-        <h2>Oops, you can not join this chat!</h2>
-        <h5>There are already two people in it. Would you like to create a <a title="New Room" href="/create" id="room">new room</a>?</h5>
-    </div>
-
-    <div class="nomessages">
-        <img src="/img/unnamed.jpg" id="noMessagesImage" />
-        <div class="info">
-            <h2>You are chatting with <span class="nickname-chat"></span>.</h2>
-            <h5>Send them a message from the form below!</h5>
-        </div>
-    </div>
-
     <div class="chatscreen">
         <ul class="chats">
-            <!-- The chat messages will go here -->
         </ul>
     </div>
 </section>
 
 <footer>
     <form id="chatform">
-        <textarea id="message" placeholder="Write something.."></textarea>
+        <textarea id="message" name="message" placeholder="Write something.."></textarea>
         <input type="submit" id="submit" value="SEND"/>
     </form>
-    <form id="loginform" route="create" method="post">
-        <input id="logininput" type="text"  placeholder="Enter your login" class="form-control" name="login" value="<?php echo e(old('login')); ?>">
+    <form id="loginform">
+        <input id="logininput" type="text" placeholder="Enter your login" class="form-control" name="login" value="<?php echo e(old('login')); ?>">
         <input id="logininput" type="password" placeholder="Enter your password" class="form-control" name="password" value="<?php echo e(old('password')); ?>">
         <input type="submit" id="submit" value="Login"/>
     </form>
-
 </footer>
+
 @stop
