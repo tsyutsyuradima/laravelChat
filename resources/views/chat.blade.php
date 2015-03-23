@@ -131,14 +131,13 @@
         });
 
         $('#chatform').on('submit', function (e) {
-            console.log($('#chatform #message').value)  ;
-            $('#chatform #message').value = "";
             $.ajax({
                 type: 'post',
                 url: 'sendMessage',
                 data: $('#chatform').serialize(),
                 dataType: "json",
                 success: function (json) {
+                    $('#message').val('');
                 }
             });
             return false;
